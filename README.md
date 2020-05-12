@@ -1,2 +1,2 @@
-# 30d-as30gr-ficos
+# 30días30gráficos
 Mi participación en #30díasdegráficos con R
