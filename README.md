@@ -1,7 +1,7 @@
-Desafío de la comunidad hispanoablante de R: **#30díasdegráficos**
+Desafío de la comunidad hispanoablante de R: #30díasdegráficos
 =======
 
-Este proyecto tiene como objetivo aprender (y en lo posible hacer algún aporte) participando en el desafío **#30díasdegráficos** en R [desafio30].
+Este proyecto tiene como objetivo aprender (y en lo posible hacer algún aporte) participando en el desafío **#30díasdegráficos** en R: [desafio30].
 
 Overview
 --------
