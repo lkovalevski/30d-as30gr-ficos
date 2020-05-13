@@ -9,6 +9,7 @@
 
 library(tidyverse)
 library(readxl)
+library(here)
 
 # Leer los datos de defunciones 2018 - 2009
 url_defunciones_2018  <- "http://www.deis.msal.gov.ar/wp-content/uploads/2020/01/DefWeb18.csv"
@@ -34,14 +35,18 @@ for(anio in c(2009 : 2018)) {
 }
 
 # Guardar el dataset en un .rds
-saveRDS(dfDefuncionesPeriodo, 
-        file = here::here("data", "01 raw", "defunciones2009-2018.rds"))
+# saveRDS(dfDefuncionesPeriodo, 
+#        file = here::here("data", "01 raw", "defunciones2009-2018.rds"))
 
 # Leer diccionario de variables
 url_diccionario  <- "http://www.deis.msal.gov.ar/wp-content/uploads/2019/01/DescDef1.xlsx"
 tmp              <-  tempfile(fileext = ".xlsx")
 download.file(url = url_diccionario, destfile = tmp, mode = "wb")
 diccionario      <- readxl::read_excel(tmp, sheet = "CODMUER", col_names = TRUE)
+
+# saveRDS(diccionario, 
+#        file = here::here("data", "01 raw", "diccionario.rds"))
+
 
 # Top 10 causas del periodo
 dfTop10causas <- dfDefuncionesPeriodo %>% 
@@ -53,8 +58,9 @@ dfTop10causas <- dfDefuncionesPeriodo %>%
 # Frecuencia causas por anio del Top 10 causas del periodo
 df <- dfDefuncionesPeriodo %>% 
   dplyr::filter(CAUSA %in% dfTop10causas$CAUSA) %>% 
+  dplyr::mutate(CAUSA = factor(CAUSA, levels = dfTop10causas$CAUSA)) %>% 
   dplyr::group_by(anio, CAUSA) %>% 
-  dplyr::summarise( n = sum(CUENTA))  %>%
+  dplyr::summarise( n  = sum(CUENTA))  %>%
   merge(., diccionario, by.x = "CAUSA", by.y = "CODIGO", all.x = TRUE) 
 
 
@@ -69,14 +75,36 @@ tiempo          = "anio"
 label_registros = "defunciones"
 color_base      = "#f5b5b5" 
 color_destacado = "#fc3f3f" 
-titulo1         = "Top 10 Causas de defunciones en Argentina en 2018"
-titulo2         = ""
+titulo1         = "Evolución de las 10 causas de mortalidad más frecuentes"
+titulo2         = "Argentina 2009-2018"
+
+degra <-colorRampPalette(c('lightgreen','lightblue'))(num.vars)
 
 # Grafico de líneas
-# Graficar la serie de Otorgados
+ggplot(df, aes(x = get(tiempo), y = n, group = CAUSA)) +
+  geom_line( aes(color = CAUSA), stat = "identity", size = rel(1.4)) + 
+  #  scale_fill_manual("") +
+  #scale_x_discrete(name = "Año") + 
+  scale_y_continuous(name = paste0("Número de ", label_registros)) + 
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "grey", size = .5) +
+  labs(title    = titulo1,
+       caption  = paste0("Fuente: http://www.deis.msal.gov.ar/ \n
+                          Realizado por @leokova, 13 May 2020"))  +
+  theme(panel.border     = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(),
+        plot.title       = element_text(size = rel(1.5)),
+        axis.text.y      = element_text(size = rel(1.3)),
+        axis.text.x      = element_text(size = rel(1.4)),
+        axis.title.x     = element_text(size = rel(1.2)),
+        axis.title.y     = element_text(size = rel(1.2))
+  )
+
+
 ggplot(df, aes(x = get(tiempo), y = n, group = CAUSA)) +
   geom_line( aes(color = CAUSA), stat = "identity", size = rel(1.4)) #+"#f0c836") +
-  scale_fill_manual("") +
+scale_fill_manual("") +
   scale_y_continuous(name = "Número de creditos otorgados") + 
   theme_bw() +   # Quitar el color de fondo
   geom_hline(yintercept = 0, color = "grey", size = .5) +
@@ -90,28 +118,3 @@ ggplot(df, aes(x = get(tiempo), y = n, group = CAUSA)) +
   )
 
 
-ggplot(df, aes(x = factor(get(var), levels = rev(df[, var])), y = n,
-               fill = destacado)) +           
-  geom_bar(stat = "identity") +               
-  scale_fill_manual(values = c(color_base, color_destacado)) +
-  guides(fill = FALSE)+ 
-  scale_x_discrete(name = "Causa de muerte (CIE-10)") + 
-  scale_y_continuous(name = paste0("Número de ", label_registros)) + 
-  theme_bw() + 
-  coord_flip() + 
-  geom_hline(yintercept = 0, color = "grey", size = .5) +
-  labs(title    = titulo1,
-       caption  = paste0("Fuente: http://www.deis.msal.gov.ar/ \n
-                          Realizado por @leokova")) +
-  annotate("text", x = df[10, var], y = 27000, label = "@leokova",
-          hjust = 0, vjust = 1.5, col = "grey70", cex= 3,
-         fontface = "bold", alpha = 0.5) +
-  theme(panel.border     = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.background = element_blank(),
-        plot.title       = element_text(size = rel(1.5)),
-        axis.text.y      = element_text(size = rel(1.3)),
-        axis.text.x      = element_text(size = rel(1.4)),
-        axis.title.x     = element_text(size = rel(1.2)),
-        axis.title.y     = element_text(size = rel(1.2))
-  )
