@@ -1,18 +1,19 @@
-#' ----
-#' Desafío #30díasdegráficos con R
-#' ===============================
-#' 
-#' Día 1 - Gráficos de barras
-#' Top 10 Causas de defunciones en Argentina en 2018
-#' @leokova - 12/05/2020
-#' ---
-
 library(tidyverse)
 library(readxl)
 
 # Leer los datos de defunciones 2018
 url_defunciones  <- "http://www.deis.msal.gov.ar/wp-content/uploads/2020/01/DefWeb18.csv"
 dfDefuncionesRaw <- readr::read_csv(url_defunciones)
+
+# 2009
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb16.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb15.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb14.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb13.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb12.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb11.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb09.csv
+http://www.deis.msal.gov.ar/wp-content/uploads/2018/06/DefWeb10.csv
 
 # Leer diccionario de variables
 url_diccionario  <- "http://www.deis.msal.gov.ar/wp-content/uploads/2019/01/DescDef1.xlsx"
