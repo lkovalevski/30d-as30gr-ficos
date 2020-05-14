@@ -70,8 +70,8 @@ tiempo          = "anio"
 label_registros = "defunciones"
 color_base      = "#f5b5b5" 
 color_destacado = "#fc3f3f" 
-titulo1         = "Evolución de las 10 causas de mortalidad más frecuentes"
-titulo2         = "Argentina 2009-2018"
+titulo1         = "Evolución del número de defunciones de las 10 causas de mortalidad más frecuentes"
+titulo2         = "en Argentina en el período 2009-2018"
 
 # Grafico de líneas
 ggplot(df, aes(x = get(tiempo), y = n, group = etiquetas)) +
@@ -92,6 +92,7 @@ ggplot(df, aes(x = get(tiempo), y = n, group = etiquetas)) +
     panel.grid.minor = element_blank(), 
     panel.background = element_blank(),
     plot.title       = element_text(size = rel(1.5)),
+    plot.subtitle    = element_text(size = rel(1.3)),
     axis.text.y      = element_text(size = rel(1.3)),
     axis.text.x      = element_text(size = rel(1.4)),
     axis.title.x     = element_text(size = rel(1.2)),
