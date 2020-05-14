@@ -3,6 +3,16 @@ Desafío de la comunidad hispanoablante de R: #30díasdegráficos
 
 Este proyecto tiene como objetivo aprender (y en lo posible hacer algún aporte) participando en el desafío **#30díasdegráficos** en R: [desafio30].
 
+
+Gráficos realizados
+-------------------
+
+![DÍA2](https://github.com/lkovalevski/30d-as30gr-ficos/blob/master/results/figures/dia_02_grafico_lineas.png)
+
+![DÍA1](https://github.com/lkovalevski/30d-as30gr-ficos/blob/master/results/figures/dia_01_grafico_barras.png)
+
+Todos los códigos: [aqui](https://github.com/lkovalevski/30d-as30gr-ficos/tree/master/code)
+ 
 Overview
 --------
 
