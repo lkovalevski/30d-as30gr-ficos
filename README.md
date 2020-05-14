@@ -7,8 +7,11 @@ Este proyecto tiene como objetivo aprender (y en lo posible hacer algún aporte)
 Gráficos realizados
 -------------------
 
+#Día 2: Gráficos de líneas
 ![DÍA2](https://github.com/lkovalevski/30d-as30gr-ficos/blob/master/results/figures/dia_02_grafico_lineas.png)
 
+
+#Día 1: Gráficos de barras
 ![DÍA1](https://github.com/lkovalevski/30d-as30gr-ficos/blob/master/results/figures/dia_01_grafico_barras.png)
 
 Todos los códigos: [aqui](https://github.com/lkovalevski/30d-as30gr-ficos/tree/master/code)
