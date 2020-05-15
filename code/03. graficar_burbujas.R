@@ -2,14 +2,15 @@
 #' Desafío #30díasdegráficos con R
 #' ===============================
 #' 
-#' Día 2 - Gráficos de líneas
-#' Evolución de las 10 causas de mortalidad más frecuentes en Argentina 2009-2018
-#' @leokova - 13/05/2020
+#' Día 3 - Gráficos de puntos/burbujas
+#' 
+#' @leokova - 15/05/2020
 #' ---
 
 library(tidyverse)
 library(readxl)
 library(RColorBrewer)
+
 
 # Leer los datos de defunciones 2018 - 2009
 url_defunciones_2018  <- "http://www.deis.msal.gov.ar/wp-content/uploads/2020/01/DefWeb18.csv"
@@ -26,7 +27,9 @@ url_defunciones_2009  <- "http://www.deis.msal.gov.ar/wp-content/uploads/2018/06
 # Construir el dataset del todo el período
 dfDefuncionesPeriodo <- data.frame()
 for(anio in c(2009 : 2018)) {
-  dfDefuncionesRaw <- readr::read_csv(get(paste0("url_defunciones_", anio))) %>% 
+  dfDefuncionesRaw <- readr::read_csv(
+    get(paste0("url_defunciones_", anio)), 
+    local = locale(encoding = "latin1")) %>% 
     mutate(anio = anio)
   dfDefuncionesPeriodo <- rbind(dfDefuncionesPeriodo, dfDefuncionesRaw)
   rm(dfDefuncionesRaw)
@@ -38,33 +41,32 @@ tmp              <-  tempfile(fileext = ".xlsx")
 download.file(url = url_diccionario, destfile = tmp, mode = "wb")
 diccionario      <- readxl::read_excel(tmp, sheet = "CODMUER", col_names = TRUE)
 
-# Top 10 causas del periodo
-dfTop10causas <- dfDefuncionesPeriodo %>% 
-  dplyr::group_by(CAUSA) %>% 
-  dplyr::summarise( n = sum(CUENTA)) %>% 
-  arrange( - n) %>% 
-  head(., 10)
+# Ordenar los grupos etarios en una variable factor
+dfDefuncionesPeriodo <- dfDefuncionesPeriodo %>%
+  dplyr::mutate( grupos_etarios = substring(GRUPEDAD, 4) )
 
-# Frecuencia causas por anio del Top 10 causas del periodo
-df <- dfDefuncionesPeriodo %>% 
-  dplyr::filter(CAUSA %in% dfTop10causas$CAUSA) %>% 
-  dplyr::mutate(CAUSA = factor(CAUSA, levels = dfTop10causas$CAUSA)) %>% 
-  dplyr::group_by(anio, CAUSA) %>% 
-  dplyr::summarise( n  = sum(CUENTA))  %>%
-  merge(., diccionario, by.x = "CAUSA", by.y = "CODIGO", all.x = TRUE) %>% 
-  dplyr::group_by(CAUSA) %>% 
-  mutate(sd = sd(n),
-         cv = 100 * sd(n) / mean(n),
-         etiquetas = stringr::str_wrap(VALOR, 35))
+orden_grupo_edad <- unique(dfDefuncionesPeriodo %>% 
+                             select(GRUPEDAD, grupos_etarios)) %>%
+  arrange(desc(GRUPEDAD))
 
-# Ordenar los niveles de las etiquetas
-orden_etiquetas <- df %>% dplyr::filter(anio == 2018) %>% arrange( - n)
-df <- df %>% 
-  dplyr::mutate(etiquetas = 
-                  factor(etiquetas, levels = orden_etiquetas$etiquetas) )
+dfDefuncionesPeriodo <- dfDefuncionesPeriodo %>%
+  dplyr::mutate( 
+    grupos_etarios = factor(grupos_etarios, 
+                            levels = orden_grupo_edad$grupos_etarios) 
+    )
+
+df <- data.frame(
+  with(dfDefuncionesPeriodo,
+       prop.table(table(anio, grupos_etarios), 1))
+) %>% 
+  dplyr::mutate(
+    porcentaje = sprintf("%3.0f%%", 100 * Freq)
+  ) 
+
+head(df)
 
 # Inputs para el gráfico
-var             = "etiquetas"
+var             = "grupos_etarios"
 tiempo          = "anio"
 label_registros = "defunciones"
 color_base      = "#f5b5b5" 
@@ -73,13 +75,13 @@ titulo1         = "Evolución del número de defunciones de las 10 causas de mor
 titulo2         = "en Argentina en el período 2009-2018"
 
 # Grafico de líneas
-ggplot(df, aes(x = get(tiempo), y = n, group = etiquetas)) +
-  geom_line( aes(color = etiquetas), stat = "identity", size = rel(1.4)) + 
+ggplot(df, aes(x = get(tiempo), y = get(var), size = Freq, fill = Freq)) +
+  geom_point(aes(color = Freq)) + 
   #scale_color_brewer(palette = ggthemes::Red, direction = -1) +
-  scale_color_manual(values = c(rev(brewer.pal(9, "Reds")), "#FFF5F0")) + 
+  #scale_color_manual(values = c(rev(brewer.pal(9, "Reds")), "#FFF5F0")) + 
   #  scale_fill_manual("") +
-  scale_x_continuous(name = "Año") + 
-  scale_y_continuous(name = paste0("Número de ", label_registros)) + 
+  scale_x_discrete(name = "Año") + 
+  scale_y_discrete(name = paste0("Número de ", label_registros)) + 
   theme_bw() +
   geom_hline(yintercept = 0, color = "grey", size = .5) +
   labs(title    = titulo1,
@@ -98,3 +100,31 @@ ggplot(df, aes(x = get(tiempo), y = n, group = etiquetas)) +
     axis.title.y     = element_text(size = rel(1.2)),
     legend.title     = element_blank()
   )
+
+
+# Grafico de barras
+ggplot(df, aes(x = factor(get(var), levels = rev(df[, var])), y = n,
+               fill = destacado)) +           
+  geom_bar(stat = "identity") +               
+  scale_fill_manual(values = c(color_base, color_destacado)) +
+  guides(fill = FALSE)+ 
+  scale_x_discrete(name = "Causa de muerte (CIE-10)") + 
+  scale_y_continuous(name = paste0("Número de ", label_registros)) + 
+  theme_bw() + 
+  coord_flip() + 
+  geom_hline(yintercept = 0, color = "grey", size = .5) +
+  labs(title    = titulo1,
+       caption  = paste0("Fuente: http://www.deis.msal.gov.ar/")) +
+  annotate("text", x = df[10, var], y = 27000, label = "@leokova",
+          hjust = 0, vjust = 1.5, col = "grey70", cex= 3,
+         fontface = "bold", alpha = 0.5) +
+  theme(panel.border     = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(),
+        plot.title       = element_text(size = rel(1.5)),
+        axis.text.y      = element_text(size = rel(1.3)),
+        axis.text.x      = element_text(size = rel(1.4)),
+        axis.title.x     = element_text(size = rel(1.2)),
+        axis.title.y     = element_text(size = rel(1.2))
+  )
+
