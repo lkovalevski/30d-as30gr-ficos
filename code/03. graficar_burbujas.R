@@ -55,6 +55,14 @@ dfDefuncionesPeriodo <- dfDefuncionesPeriodo %>%
                             levels = orden_grupo_edad$grupos_etarios) 
     )
 
+#---------
+# defunciones <- saveRDS(dfDefuncionesPeriodo, 
+#                        file = here::here("data", "01 raw", "defunciones.rds"))
+
+defunciones <- readRDS(here::here("data", "01 raw", "defunciones.rds"))
+diccionario <- readRDS(here::here("data", "01 raw", "diccionario.rds"))
+
+
 df <- data.frame(
   with(dfDefuncionesPeriodo,
        prop.table(table(anio, grupos_etarios), 1))
@@ -76,14 +84,16 @@ titulo2         = "en Argentina en el período 2009-2018"
 
 # Grafico de líneas
 ggplot(df, aes(x = get(tiempo), y = get(var), size = Freq, fill = Freq)) +
-  geom_point(aes(color = Freq)) + 
+  geom_point(aes(color = Freq, size = Freq, stroke = 3)) + 
   #scale_color_brewer(palette = ggthemes::Red, direction = -1) +
   #scale_color_manual(values = c(rev(brewer.pal(9, "Reds")), "#FFF5F0")) + 
-  #  scale_fill_manual("") +
+  # scale_fill_manual("") +
+  scale_color_gradient(low = color_base, high = color_destacado) +
   scale_x_discrete(name = "Año") + 
   scale_y_discrete(name = paste0("Número de ", label_registros)) + 
   theme_bw() +
   geom_hline(yintercept = 0, color = "grey", size = .5) +
+  geom_text(aes(x = get(tiempo), y = get(var), label = porcentaje)) +
   labs(title    = titulo1,
        subtitle = titulo2,
        caption  = paste0("Fuente: http://www.deis.msal.gov.ar/ \n
@@ -98,7 +108,9 @@ ggplot(df, aes(x = get(tiempo), y = get(var), size = Freq, fill = Freq)) +
     axis.text.x      = element_text(size = rel(1.4)),
     axis.title.x     = element_text(size = rel(1.2)),
     axis.title.y     = element_text(size = rel(1.2)),
-    legend.title     = element_blank()
+    legend.title     = element_blank(),
+    legend.position  = "none",
+    
   )
 
 
